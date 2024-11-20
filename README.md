@@ -1,7 +1,7 @@
 ---
-title: Perceptual Similiarity
-emoji: 😻
-colorFrom: indigo
+title: Perceptual Similarity
+emoji: 🗣️
+colorFrom: purple
 colorTo: gray
 sdk: gradio
 sdk_version: 5.6.0
