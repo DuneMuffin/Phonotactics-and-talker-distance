@@ -14,6 +14,7 @@ import plotly.graph_objs as go
 import plotly.offline as pyo
 
 import gradio as gr
+import spaces
 
 tsne_1 = 'tsne-3d-one'
 tsne_2 = 'tsne-3d-two'
@@ -166,6 +167,7 @@ def plot_two_speakers(speaker1, speaker2, max_s1=None, max_s2=None, df_subset=No
 
 time_frame = 5
 
+@spaces.GPU
 def grPlot(wav_paths, speakerLabel):
 	seed = 31415
 	# Load wav files
