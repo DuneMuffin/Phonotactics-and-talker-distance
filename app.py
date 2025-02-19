@@ -133,7 +133,7 @@ def grMeasureDistance(wav_paths):
 
 #csv export function
 def export_csv(d):
-	if(len(d)>1):
+	if(len(d.iloc[0,0])>0):
 		d.to_csv("output.csv")
 		return gr.File(value="output.csv", visible=True)
 
@@ -148,7 +148,7 @@ with gr.Blocks() as demo:
 		with gr.Column():
 			runbtn = gr.Button("Run")
 			csv = gr.File(interactive=False, visible=False)
-			dataframe = gr.Dataframe(headers=["S1", "S2", "distance"], visible=True)
+			dataframe = gr.Dataframe(headers=["S1", "S2", "distance"], visible=True, row_count=[1, 'dynamic'])
 
 
 	runbtn.click(fn=grMeasureDistance, inputs=inputFiles, outputs=dataframe)
@@ -156,9 +156,5 @@ with gr.Blocks() as demo:
 	
 	inputFiles.change(fn=clearInterface, inputs=None, outputs=[csv, dataframe])
 
-
-	
-
 if __name__ == "__main__":
 	demo.launch()
-
