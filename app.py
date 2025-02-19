@@ -82,7 +82,7 @@ def calc_distance(df_subset, speaker1, speaker2, cols):
 # To change that, change "time_frame" below.
 time_frame = 5
 
-@spaces.GPU(duration=1500)
+@spaces.GPU(duration=120)
 def grMeasureDistance(wav_paths):
 	seed = 31415
 	# Load wav files
