@@ -84,6 +84,9 @@ time_frame = 5
 
 # @spaces.GPU(duration=120)
 def grMeasureDistance(wav_paths):
+	if wav_paths is None:
+		gr.Warning("Please upload some sound files!")
+		return None
 	seed = 31415
 	# Load wav files
 	expected_sr = 16000
@@ -134,20 +137,28 @@ def export_csv(d):
 		d.to_csv("output.csv")
 		return gr.File(value="output.csv", visible=True)
 
+def clearInterface():
+	return gr.File(interactive=False, visible=False), gr.Dataframe(value=None)
+
 #main GradIO interface
 with gr.Blocks() as demo:
 	gr.Markdown("Upload wav files, then click 'run' to get distances")
 	with gr.Row():
+		inputFiles = gr.File(file_count="multiple", file_types=[".wav"])
 		with gr.Column():
-			inputFiles = gr.File(file_count="multiple", file_types=[".wav"])
 			runbtn = gr.Button("Run")
-		with gr.Column():
-			dataframe = gr.Dataframe(headers=["S1", "S2", "distance"])
 			csv = gr.File(interactive=False, visible=False)
+			dataframe = gr.Dataframe(headers=["S1", "S2", "distance"], visible=True)
+
 
 	runbtn.click(fn=grMeasureDistance, inputs=inputFiles, outputs=dataframe)
 	dataframe.change(export_csv, inputs=dataframe, outputs=csv)
 	
+	inputFiles.change(fn=clearInterface, inputs=None, outputs=[csv, dataframe])
+
+
+	
+
 if __name__ == "__main__":
 	demo.launch()
 
