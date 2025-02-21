@@ -142,7 +142,49 @@ def clearInterface():
 
 #main GradIO interface
 with gr.Blocks() as demo:
-	gr.Markdown("Upload wav files, then click 'run' to get distances")
+	gr.Markdown(
+	"""
+	# PS3-PDM: Perceptual Similarity Space for Speech-Pairwise Distance Matrix
+	 """)
+ 
+	with gr.Accordion("Click to view details", open=False):
+		gr.Markdown(
+		"""
+		## Project
+		- Perceptual Similarity Space for Speech
+		- Supported by the National Science Foundation (DRL 2219843) and Binational Science Foundation (2022618)
+ 
+		## Project team
+		- [Matt Goldrick](https://faculty.wcas.northwestern.edu/matt-goldrick/)
+		- [Yossi Keshet](https://keshet.net.technion.ac.il/)
+		- [Ann Bradlow](https://faculty.wcas.northwestern.edu/ann-bradlow/)
+		- [Seung-Eun Kim](https://seungeun-kim.github.io/)
+		- [Roni Chernyak](https://bronichern.github.io/)
+		- [Chun Liang Chan](https://staff.wcas.northwestern.edu/clc500/)
+ 
+		## Description
+		Takes a set of utterance files (.wav format) and generates all pair-wise distances of the corresponding trajectories in HuBERT embedding spaces. Methods are based on Kim et al. (2025) and Chernyak et al. (2024). We report distances for embeddings in the original embedding space of transformer layer 12, without any form of dimensionality reduction.
+ 
+		## Requirements
+		- All speech files must be in .wav format. (Note: It is recommended to normalize the loudness of the files.)
+		- All speech files must contain productions of the identical linguistic content (i.e., same words in same order). 
+		- For example, the files may contain productions of a given sentence by different talkers, or by a single talker under different conditions. 
+		- Note that the utility will return distance values for files with different content the interpretation of these values is meaningless.
+ 
+		## Usage
+		- Upload wav files.
+		- Click 'run' to get distances.
+		- Output (download in .csv format) consists of a table with 3 columns (sentence1, sentence2, distance) and (n*(n-1))/2 rows where n = number of sentences (.wav soundfiles).
+ 
+		## Capacity limits
+		- Processing time is approximately 7 times the duration of the input audio files. For example, a minute of audio can take up to 7 minutes to process.
+ 
+		## References
+		- Kim, S-E, Chernyak, B. R., Keshet, J., Goldrick, M., & Bradlow, A. R. (2025).  Predicting relative intelligibility from inter-talker distances in a perceptual similarity space for speech.  Psychonomic Bulletin and Review. https://doi.org/10.3758/s13423-025-02652-2
+		- Chernyak, B. R., Bradlow, A. R., Keshet, J., & Goldrick, M., & (2024).  A perceptual similarity space for speech based on self-supervised speech representations.  Journal of the Acoustical Society of America, 155(6), 3915-3929.  
+
+		"""
+		)
 	with gr.Row():
 		inputFiles = gr.File(file_count="multiple", file_types=[".wav"])
 		with gr.Column():
