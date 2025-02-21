@@ -169,7 +169,7 @@ with gr.Blocks() as demo:
 		- All speech files must be in .wav format. (Note: It is recommended to normalize the loudness of the files.)
 		- All speech files must contain productions of the identical linguistic content (i.e., same words in same order). 
 		- For example, the files may contain productions of a given sentence by different talkers, or by a single talker under different conditions. 
-		- Note that the utility will return distance values for files with different content the interpretation of these values is meaningless.
+		- Note that while the utility will return distance values for files with different content the interpretation of these values is meaningless.
  
 		## Usage
 		- Upload wav files.
@@ -177,7 +177,9 @@ with gr.Blocks() as demo:
 		- Output (download in .csv format) consists of a table with 3 columns (sentence1, sentence2, distance) and (n*(n-1))/2 rows where n = number of sentences (.wav soundfiles).
  
 		## Capacity limits
-		- Processing time is approximately 7 times the duration of the input audio files. For example, a minute of audio can take up to 7 minutes to process.
+		- Processing time is approximately 7 times the duration of the input audio files. For example, a minute of audio can take up to 7 minutes to process. If processing is taking longer than expected, please refresh the page and reupload your files.
+		- Ocassionally the app may fail when uploading a large number of files in a single session. Consider running in smaller batches if possible.
+		- Networks with slower upload speeds may experience reduced performance.
  
 		## References
 		- Kim, S-E, Chernyak, B. R., Keshet, J., Goldrick, M., & Bradlow, A. R. (2025).  Predicting relative intelligibility from inter-talker distances in a perceptual similarity space for speech.  Psychonomic Bulletin and Review. https://doi.org/10.3758/s13423-025-02652-2
