@@ -199,4 +199,4 @@ with gr.Blocks() as demo:
 	inputFiles.change(fn=clearInterface, inputs=None, outputs=[csv, dataframe])
 
 if __name__ == "__main__":
-	demo.launch()
+	demo.launch(ssr_mode=False)
