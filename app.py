@@ -145,15 +145,17 @@ with gr.Blocks() as demo:
 	gr.Markdown(
 	"""
 	# PS3-PDM: Perceptual Similarity Space for Speech-Pairwise Distance Matrix
+	## Project
+	- Perceptual Similarity Space for Speech
+	- Supported by the National Science Foundation (DRL 2219843) and Binational Science Foundation (2022618)
+	
+	## Description
+	Takes a set of utterance files (.wav format) and generates all pair-wise distances of the corresponding trajectories in HuBERT embedding spaces. Methods are based on Kim et al. (2025) and Chernyak et al. (2024). We report distances for embeddings in the original embedding space of transformer layer 12, without any form of dimensionality reduction.
 	 """)
  
-	with gr.Accordion("Click to view details", open=False):
+	with gr.Accordion("Click for more details", open=False):
 		gr.Markdown(
 		"""
-		## Project
-		- Perceptual Similarity Space for Speech
-		- Supported by the National Science Foundation (DRL 2219843) and Binational Science Foundation (2022618)
- 
 		## Project team
 		- [Matt Goldrick](https://faculty.wcas.northwestern.edu/matt-goldrick/)
 		- [Yossi Keshet](https://keshet.net.technion.ac.il/)
@@ -161,9 +163,6 @@ with gr.Blocks() as demo:
 		- [Seung-Eun Kim](https://seungeun-kim.github.io/)
 		- [Roni Chernyak](https://bronichern.github.io/)
 		- [Chun Liang Chan](https://staff.wcas.northwestern.edu/clc500/)
- 
-		## Description
-		Takes a set of utterance files (.wav format) and generates all pair-wise distances of the corresponding trajectories in HuBERT embedding spaces. Methods are based on Kim et al. (2025) and Chernyak et al. (2024). We report distances for embeddings in the original embedding space of transformer layer 12, without any form of dimensionality reduction.
  
 		## Requirements
 		- All speech files must be in .wav format. (Note: It is recommended to normalize the loudness of the files.)
