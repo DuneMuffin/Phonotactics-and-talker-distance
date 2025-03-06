@@ -182,6 +182,7 @@ with gr.Blocks() as demo:
  
 		## References
 		- Kim, S-E, Chernyak, B. R., Keshet, J., Goldrick, M., & Bradlow, A. R. (2025).  Predicting relative intelligibility from inter-talker distances in a perceptual similarity space for speech.  Psychonomic Bulletin and Review. https://doi.org/10.3758/s13423-025-02652-2
+		- [for full-dimensional data and analysis of Kim et al. (2025), [see this OSF](https://doi.org/10.17605/osf.io/v5tru) repository] Kim, S.-E., Goldrick, M., & Bradlow, A. R. (2025). Predicting relative talker intelligibility using HuBERT perceptual similarity space distances (full-dimension). https://doi.org/10.17605/osf.io/v5tru
 		- Chernyak, B. R., Bradlow, A. R., Keshet, J., & Goldrick, M., & (2024).  A perceptual similarity space for speech based on self-supervised speech representations.  Journal of the Acoustical Society of America, 155(6), 3915-3929.  
 
 		"""
