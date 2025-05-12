@@ -163,7 +163,6 @@ def clearInterface():
 
 #main GradIO interface
 with gr.Blocks() as demo:
-	gr.set_static_paths(paths=[Path.cwd().absolute()/"assets"])
 	gr.Markdown(
 	"""
 	# PS3-PDM: Perceptual Similarity Space for Speech-Pairwise Distance Matrix
