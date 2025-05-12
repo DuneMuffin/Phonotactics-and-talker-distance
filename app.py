@@ -10,7 +10,6 @@ import spaces
 from itertools import combinations
 import os
 
-
 def mut_normalize_sequences(sq1, sq2, normalize: bool):
     """
     Normalize the sequences together by z-scoring each dimension.
@@ -83,7 +82,11 @@ def calc_distance(df_subset, speaker1, speaker2, cols):
 time_frame = 5
 
 # @spaces.GPU(duration=120)
-def grMeasureDistance(wav_paths):
+def grMeasureDistance(wav_paths, map_file):
+	map_df = pd.read_csv(map_file)
+	#for index, row in map_df.iterrows():
+    #	gr.Info(row['File1'].astype(str))	
+
 	if wav_paths is None:
 		gr.Warning("Please upload some sound files!")
 		return None
@@ -122,14 +125,32 @@ def grMeasureDistance(wav_paths):
 
 	# Evaluate Distance of all speaker pairs
 	distances_list = []
-	wav_pairs = list(combinations(names, 2))
+	#wav_pairs = list(combinations(names, 2))
+	wav_pairs = []
+			
+	for index, row in map_df.iterrows():
+		file1_index = find_substring_index(names, row['S1'])
+		file2_index = find_substring_index(names, row['S2'])
+		
+		if(file1_index != -1 and file2_index != -1):
+			wav_pairs.append((names[file1_index], names[file2_index]))
+
+	#print(len(wav_pairs))
 	for wav_pair in wav_pairs:
 		S1 = wav_pair[0]
 		S2 = wav_pair[1]
+		#print("*** " + S1 + " *** " + S2 + " ***")
+		
 		# FULL DIMENSIONALITY
 		distance = calc_distance(df_subset, S1, S2, hubert_feature_columns)
 		distances_list.append([os.path.basename(S1), os.path.basename(S2), distance])
 	return distances_list
+
+def find_substring_index(string_list, substring):
+    for index, string in enumerate(string_list):
+        if substring in string:
+            return index
+    return -1
 
 #csv export function
 def export_csv(d):
@@ -142,6 +163,7 @@ def clearInterface():
 
 #main GradIO interface
 with gr.Blocks() as demo:
+	gr.set_static_paths(paths=[Path.cwd().absolute()/"assets"])
 	gr.Markdown(
 	"""
 	# PS3-PDM: Perceptual Similarity Space for Speech-Pairwise Distance Matrix
@@ -150,7 +172,7 @@ with gr.Blocks() as demo:
 	- Supported by the National Science Foundation (DRL 2219843) and Binational Science Foundation (2022618)
 	
 	## Description
-	Takes a set of utterance files (.wav format) and generates all pair-wise distances of the corresponding trajectories in HuBERT embedding spaces. Methods are based on Kim et al. (2025) and Chernyak et al. (2024). We report distances for embeddings in the original embedding space of transformer layer 12, without any form of dimensionality reduction.
+	Takes a set of utterance files (.wav format) and a two column .csv *map file*. Generates pair-wise distances of the corresponding trajectories in HuBERT embedding spaces. Methods are based on Kim et al. (2025) and Chernyak et al. (2024). We report distances for embeddings in the original embedding space of transformer layer 12, without any form of dimensionality reduction.
 	 """)
  
 	with gr.Accordion("Click for more details", open=False):
@@ -166,14 +188,25 @@ with gr.Blocks() as demo:
  
 		## Requirements
 		- All speech files must be in .wav format. (Note: It is recommended to normalize the loudness of the files.)
-		- All speech files must contain productions of the identical linguistic content (i.e., same words in same order). 
+		- All speech files that are being compared must contain productions of the identical linguistic content (i.e., same words in same order). 
 		- For example, the files may contain productions of a given sentence by different talkers, or by a single talker under different conditions. 
 		- Note that while the utility will return distance values for files with different content the interpretation of these values is meaningless.
  
 		## Usage
 		- Upload wav files.
+		- Upload csv *map file* that contains two columns with the headers "S1" and "S2". 
+		
+		| S1              | S2              |
+		| --------------- | --------------- |
+		| my_sentence_1_1 | my_sentence_1_2 |
+		| my_sentence_2_1 | my_sentence_2_2 |
+		| etc...          | etc...          |
+		
+		- Example csv map file available [here](https://huggingface.co/spaces/MLSpeech/perceptual-similarity/resolve/main/example.csv)
+		- Each cell should contain the name of a wav file that was uploaded **without the ".wav" extension**
+		- Distances will be measured by comparing the files in the "S1" column to the files in the "S2" column		
 		- Click 'run' to get distances.
-		- Output (download in .csv format) consists of a table with 3 columns (sentence1, sentence2, distance) and (n*(n-1))/2 rows where n = number of sentences (.wav soundfiles).
+		- Output (download in .csv format) consists of a table with 4 columns (index, S1, S2, distance)
  
 		## Capacity limits
 		- Processing time is approximately 7 times the duration of the input audio files. For example, a minute of audio can take up to 7 minutes to process. If processing is taking longer than expected, please refresh the page and reupload your files.
@@ -188,14 +221,15 @@ with gr.Blocks() as demo:
 		"""
 		)
 	with gr.Row():
-		inputFiles = gr.File(file_count="multiple", file_types=[".wav"])
+		inputFiles = gr.File(label="wav files", file_count="multiple", file_types=[".wav"])
+		mapFile = gr.File(label="map file", file_count="single", file_types=[".csv", ".txt"])		
 		with gr.Column():
 			runbtn = gr.Button("Run")
 			csv = gr.File(interactive=False, visible=False)
 			dataframe = gr.Dataframe(headers=["S1", "S2", "distance"], visible=True, row_count=[1, 'dynamic'])
 
 
-	runbtn.click(fn=grMeasureDistance, inputs=inputFiles, outputs=dataframe)
+	runbtn.click(fn=grMeasureDistance, inputs=[inputFiles, mapFile], outputs=dataframe)
 	dataframe.change(export_csv, inputs=dataframe, outputs=csv)
 	
 	inputFiles.change(fn=clearInterface, inputs=None, outputs=[csv, dataframe])
