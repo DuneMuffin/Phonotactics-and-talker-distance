@@ -186,7 +186,8 @@ with gr.Blocks() as demo:
 		- [Chun Liang Chan](https://staff.wcas.northwestern.edu/clc500/)
  
 		## Requirements
-		- All speech files must be in .wav format. (Note: It is recommended to normalize the loudness of the files.)
+		- All speech files must be in a single channel .wav format. (Note: It is recommended to normalize the loudness of the files.)
+		- Stereo or multi channel audio files should be reduced to a single channel before processing. A [Praat](https://www.fon.hum.uva.nl/praat/) script that extracts a single channel from a directory of .wav files is available [here](https://huggingface.co/spaces/MLSpeech/perceptual-similarity/resolve/main/extractSingleChannel.praat).
 		- All speech files that are being compared must contain productions of the identical linguistic content (i.e., same words in same order). 
 		- For example, the files may contain productions of a given sentence by different talkers, or by a single talker under different conditions. 
 		- Note that while the utility will return distance values for files with different content the interpretation of these values is meaningless.
