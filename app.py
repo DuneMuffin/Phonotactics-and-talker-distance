@@ -129,8 +129,10 @@ def grMeasureDistance(wav_paths, map_file):
 	wav_pairs = []
 			
 	for index, row in map_df.iterrows():
-		file1_index = find_substring_index(names, row['S1'])
-		file2_index = find_substring_index(names, row['S2'])
+		#file1_index = find_substring_index(names, row['S1'])
+		#file2_index = find_substring_index(names, row['S2'])
+		file1_index = find_exactstring_index(names, row['S1'])
+		file2_index = find_exactstring_index(names, row['S2'])
 		
 		if(file1_index != -1 and file2_index != -1):
 			wav_pairs.append((names[file1_index], names[file2_index]))
@@ -149,6 +151,12 @@ def grMeasureDistance(wav_paths, map_file):
 def find_substring_index(string_list, substring):
     for index, string in enumerate(string_list):
         if substring in string:
+            return index
+    return -1
+
+def find_exactstring_index(string_list, substring):
+    for index, string in enumerate(string_list):
+        if substring == os.path.basename(string):
             return index
     return -1
 
