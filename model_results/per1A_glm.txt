@@ -1,0 +1,43 @@
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: response ~ legality * (diffVshared + weakVstrong + accent) +      (1 + legality | worker_ID) + (1 + legality | syllable_no_speaker)
+   Data: xp_1A
+Control: glmerControl(optimizer = "bobyqa")
+
+     AIC      BIC   logLik deviance df.resid 
+ 11127.7  11227.4  -5549.8  11099.7     9166 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-5.3732 -0.7845  0.3905  0.7231  3.6907 
+
+Random effects:
+ Groups              Name        Variance Std.Dev. Corr 
+ worker_ID           (Intercept) 0.90614  0.9519        
+                     legality    0.06198  0.2490   -0.33
+ syllable_no_speaker (Intercept) 0.30717  0.5542        
+                     legality    0.06052  0.2460   0.58 
+Number of obs: 9180, groups:  worker_ID, 255; syllable_no_speaker, 72
+
+Fixed effects:
+                       Estimate Std. Error z value Pr(>|z|)    
+(Intercept)           3.049e-01  9.175e-02   3.324 0.000889 ***
+legality              6.436e-01  5.843e-02  11.017  < 2e-16 ***
+diffVshared           3.744e-06  2.572e-01   0.000 0.999988    
+weakVstrong          -2.849e-01  1.823e-01  -1.563 0.118007    
+accent               -3.363e-01  1.814e-01  -1.854 0.063774 .  
+legality:diffVshared  7.231e-01  2.006e-01   3.604 0.000313 ***
+legality:weakVstrong -5.570e-02  1.429e-01  -0.390 0.696617    
+legality:accent       4.467e-01  1.409e-01   3.169 0.001528 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) leglty dffVsh wkVstr accent lglty:dV lglty:wV
+legality     0.159                                              
+diffVshared  0.004  0.005                                       
+weakVstrong  0.002 -0.007  0.004                                
+accent      -0.001  0.001  0.002  0.000                         
+lglty:dffVs  0.004  0.015 -0.086 -0.007 -0.001                  
+lglty:wkVst -0.006 -0.008 -0.007 -0.081  0.000 -0.005           
+leglty:ccnt -0.001 -0.003 -0.001  0.000 -0.092  0.002    0.002  

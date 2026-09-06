@@ -1,0 +1,4 @@
+AIC: 19129.7021698823
+ legality main effect: [1] "chisq(  )= 141.43 , p < .0001"
+ distance main effect: [1] "chisq()=12.89, p = 3e-04"
+ legality:distance interaction: [1] "chisq(  )= 39.98 , p < .0001"

@@ -1,0 +1,39 @@
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: response ~ legality * (diffVshared + native) + (1 + legality |      worker_ID) + (1 + legality | syllable_no_speaker)
+   Data: all_gen_syllables
+Control: glmerControl(optimizer = "bobyqa")
+
+     AIC      BIC   logLik deviance df.resid 
+  6997.3   7077.9  -3486.7   6973.3     6100 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.4602 -0.8637  0.4584  0.6161  2.1546 
+
+Random effects:
+ Groups              Name        Variance Std.Dev. Corr 
+ worker_ID           (Intercept) 0.45350  0.6734        
+                     legality    0.09181  0.3030   -0.18
+ syllable_no_speaker (Intercept) 0.15284  0.3909        
+                     legality    0.08694  0.2949   -0.13
+Number of obs: 6112, groups:  worker_ID, 191; syllable_no_speaker, 64
+
+Fixed effects:
+                     Estimate Std. Error z value Pr(>|z|)    
+(Intercept)           0.97326    0.07607  12.794  < 2e-16 ***
+legality              0.76076    0.07690   9.893  < 2e-16 ***
+diffVshared          -0.20062    0.18773  -1.069 0.285218    
+native                0.13563    0.18813   0.721 0.470947    
+legality:diffVshared  0.71194    0.20956   3.397 0.000681 ***
+legality:native      -0.03570    0.21126  -0.169 0.865793    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) leglty dffVsh native lglt:V
+legality    -0.008                            
+diffVshared  0.004  0.015                     
+native       0.001  0.006 -0.501              
+lglty:dffVs  0.012  0.002 -0.001 -0.008       
+legalty:ntv  0.005  0.015 -0.008  0.021 -0.499

@@ -1,0 +1,5 @@
+legality main effect: [1] "chisq( 1 )= 127.64 , p < .0001"
+ shared main effect: [1] "chisq( 1 )= 28.82 , p < .0001"
+ strength main effect: [1] "chisq(1)=0.99, p = 0.32"
+ shared-legality interaction: [1] "chisq(1)=9.81, p = 0.0017"
+ strength-legality interaction: [1] "chisq(1)=0.03, p = 0.868"

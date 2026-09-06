@@ -1,0 +1,37 @@
+Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: binomial  ( logit )
+Formula: response ~ legality * avg_distance_c + (1 + legality | worker_ID) +  
+    (1 + legality | syllable_no_speaker)
+   Data: all_gen_syllables
+Control: glmerControl(optimizer = "bobyqa")
+
+      AIC       BIC    logLik -2*log(L)  df.resid 
+   6990.2    7057.4   -3485.1    6970.2      6102 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.4623 -0.8599  0.4586  0.6141  2.1978 
+
+Random effects:
+ Groups              Name        Variance Std.Dev. Corr  
+ worker_ID           (Intercept) 0.45093  0.6715         
+                     legality    0.07939  0.2818   -0.16 
+ syllable_no_speaker (Intercept) 0.15270  0.3908         
+                     legality    0.08805  0.2967   -0.13 
+Number of obs: 6112, groups:  worker_ID, 191; syllable_no_speaker, 64
+
+Fixed effects:
+                        Estimate Std. Error z value Pr(>|z|)    
+(Intercept)              0.97336    0.07596  12.814  < 2e-16 ***
+legality                 0.75886    0.07657   9.910  < 2e-16 ***
+avg_distance_c          -0.07232    0.05930  -1.219    0.223    
+legality:avg_distance_c  0.27636    0.06590   4.193 2.75e-05 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) leglty avg_d_
+legality    -0.003              
+avg_dstnc_c  0.000  0.020       
+lglty:vg_d_  0.017  0.001  0.005

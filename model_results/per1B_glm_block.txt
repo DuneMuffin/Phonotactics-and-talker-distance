@@ -1,0 +1,45 @@
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: response ~ legality * (diffVshared + weakVstrong + block_centered) +      legality:diffVshared:block_centered + (1 + legality | worker_ID) +      (1 + legality | syllable_no_speaker)
+   Data: xp_1B
+Control: glmerControl(optimizer = "bobyqa")
+
+     AIC      BIC   logLik deviance df.resid 
+  8004.9   8107.5  -3987.5   7974.9     6897 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.6482 -0.7562  0.3831  0.6611  3.4036 
+
+Random effects:
+ Groups              Name        Variance Std.Dev. Corr 
+ worker_ID           (Intercept) 0.68683  0.8288        
+                     legality    0.10255  0.3202   -0.58
+ syllable_no_speaker (Intercept) 0.36971  0.6080        
+                     legality    0.06232  0.2496   0.71 
+Number of obs: 6912, groups:  worker_ID, 192; syllable_no_speaker, 108
+
+Fixed effects:
+                                    Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                          0.52668    0.08933   5.896 3.73e-09 ***
+legality                             1.04172    0.06827  15.258  < 2e-16 ***
+diffVshared                         -1.06671    0.19314  -5.523 3.33e-08 ***
+weakVstrong                          0.16109    0.16301   0.988  0.32304    
+block_centered                       0.10033    0.01111   9.031  < 2e-16 ***
+legality:diffVshared                 0.57904    0.18040   3.210  0.00133 ** 
+legality:weakVstrong                -0.02322    0.14930  -0.156  0.87640    
+legality:block_centered              0.03358    0.02223   1.511  0.13086    
+legality:diffVshared:block_centered  0.05150    0.06382   0.807  0.41964    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) leglty dffVsh wkVstr blck_c lglty:dV lglty:wV lglt:_
+legality     0.074                                                     
+diffVshared -0.007 -0.017                                              
+weakVstrong  0.000  0.002 -0.026                                       
+block_cntrd  0.022  0.059 -0.013  0.002                                
+lglty:dffVs -0.019 -0.036 -0.131 -0.003  0.009                         
+lglty:wkVst  0.004  0.002 -0.003 -0.184  0.001 -0.011                  
+lglty:blck_  0.021  0.059  0.007  0.000  0.067 -0.029    0.004         
+lglty:dfV:_  0.004 -0.025  0.016  0.000 -0.049  0.061    0.005   -0.051

@@ -1,0 +1,45 @@
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: response ~ legality * (diffVshared + native + block_centered) +      legality:diffVshared:block_centered + (1 + legality | worker_ID) +      (1 + legality | syllable_no_speaker)
+   Data: all_gen_syllables
+Control: glmerControl(optimizer = "bobyqa")
+
+     AIC      BIC   logLik deviance df.resid 
+  6956.4   7057.2  -3463.2   6926.4     6097 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.9293 -0.8438  0.4493  0.6127  2.4879 
+
+Random effects:
+ Groups              Name        Variance Std.Dev. Corr 
+ worker_ID           (Intercept) 0.46301  0.6804        
+                     legality    0.09919  0.3149   -0.17
+ syllable_no_speaker (Intercept) 0.15769  0.3971        
+                     legality    0.07930  0.2816   -0.09
+Number of obs: 6112, groups:  worker_ID, 191; syllable_no_speaker, 64
+
+Fixed effects:
+                                    Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                          0.98252    0.07700  12.759  < 2e-16 ***
+legality                             0.77004    0.07683  10.023  < 2e-16 ***
+diffVshared                         -0.20475    0.18938  -1.081 0.279623    
+native                               0.13933    0.18977   0.734 0.462826    
+block_centered                       0.09020    0.01337   6.746 1.52e-11 ***
+legality:diffVshared                 0.70894    0.21168   3.349 0.000811 ***
+legality:native                     -0.03686    0.21309  -0.173 0.862684    
+legality:block_centered              0.00699    0.02672   0.262 0.793654    
+legality:diffVshared:block_centered -0.06750    0.07470  -0.904 0.366241    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) leglty dffVsh native blck_c lglt:V lglty: lglt:_
+legality     0.009                                                 
+diffVshared  0.003  0.015                                          
+native       0.001  0.006 -0.501                                   
+block_cntrd  0.036  0.039 -0.004  0.004                            
+lglty:dffVs  0.012  0.001  0.001 -0.008  0.003                     
+legalty:ntv  0.005  0.016 -0.008  0.021  0.000 -0.498              
+lglty:blck_  0.019  0.072  0.001  0.000  0.119 -0.007  0.007       
+lglty:dfV:_  0.000 -0.003  0.012 -0.001  0.029  0.054  0.003  0.006

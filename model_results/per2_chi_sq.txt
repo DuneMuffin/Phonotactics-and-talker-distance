@@ -1,0 +1,5 @@
+legality main effect: [1] "chisq( 1 )= 62.83 , p < .0001"
+ diffVshared main effect: [1] "chisq(1)=1.13, p = 0.2871"
+native main effect: [1] "chisq(1)=0.52, p = 0.472"
+ shared-legality interaction: [1] "chisq(1)=11.08, p = 9e-04"
+ native-legality interaction: [1] "chisq(1)=0.03, p = 0.8672"

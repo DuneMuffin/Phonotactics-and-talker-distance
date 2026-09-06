@@ -1,0 +1,9 @@
+# Audio files (large, distributed separately — not tracked in this repo)
+audio/
+
+# macOS / editor / R session cruft
+.DS_Store
+**/.DS_Store
+.Rhistory
+**/.Rhistory
+.Rproj.user/
