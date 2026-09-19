@@ -9,8 +9,6 @@ Warping (DTW)**, then correlates those embedding distances with human perceptual
 legality judgments from two psycholinguistics experiments (Per1, which splits
 into sub-experiments 1A and 1B, and Per2).
 
-Funded by the NSF (DRL 2219843) and the Binational Science Foundation (2022618).
-
 ## Core idea
 
 For each participant, we measure a **legality effect** — how much more they

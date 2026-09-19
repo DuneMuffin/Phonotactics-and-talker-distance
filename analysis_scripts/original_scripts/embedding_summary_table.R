@@ -43,6 +43,15 @@ prep_data <- function(file_path, sim_path, experiment) {
     gen <- merge(gen, cn)
     gen$xp_num <- ifelse(gen$condition_num < 5, 1, 2)
     gen$syllable_no_speaker <- substring(gen$syllable, 7, 9)
+  } else {
+    # per2 condition labels. Without this merge, gen$condition partial-matches
+    # to condition_num (integers), every contrast below evaluates to a constant,
+    # and the "condition" model silently collapses to response ~ legality.
+    cn <- data.frame(condition_num = c(1, 2, 3),
+                     condition = c("mixed-different",
+                                   "non-native-different",
+                                   "non-native-shared"))
+    gen <- merge(gen, cn)
   }
 
   gen$response   <- as.factor(gen$response)
@@ -145,6 +154,17 @@ per2$native      <- ifelse(per2$condition == 'mixed-different', 0.5, -0.25)
 
 rand_eff <- "(1 + legality | worker_ID) + (1 + legality | syllable_no_speaker)"
 
+# A constant contrast means the labels didn't attach; lme4 would drop the column
+# and quietly fit a smaller model than the table claims.
+check_contrasts <- function(d, cols, label) {
+  bad <- cols[vapply(cols, function(c) length(unique(d[[c]])) < 2, logical(1))]
+  if (length(bad)) stop(label, ": constant contrast(s) - ", paste(bad, collapse = ", "))
+}
+check_contrasts(per1, c("diffVshared_combined", "weakVstrong_combined", "accent_combined"), "per1")
+check_contrasts(per1A, c("diffVshared", "weakVstrong", "accent"), "per1A")
+check_contrasts(per1B, c("diffVshared", "weakVstrong"), "per1B")
+check_contrasts(per2, c("diffVshared", "native"), "per2")
+
 results <- bind_rows(
   fit_and_extract(per1,  "Per1 (combined 1A+1B)",
                   as.formula(paste("response ~ legality * (diffVshared_combined + weakVstrong_combined + accent_combined) +", rand_eff))),
@@ -164,9 +184,10 @@ write.csv(results, "model_results/embedding_interaction_summary.csv", row.names 
 
 worker_fa <- function(data, label) {
   data %>%
-    group_by(worker_ID, legality, avg_distance) %>%
+    group_by(worker_ID, legality, avg_distance, speaker1, speaker2) %>%
     summarize(n_yes = sum(yesResponse), n_total = n(), .groups = "drop") %>%
-    mutate(fa_logit = log((n_yes + 0.5) / (n_total - n_yes + 0.5)),
+    mutate(pair = paste(speaker1, speaker2, sep = " vs "),
+           fa_logit = log((n_yes + 0.5) / (n_total - n_yes + 0.5)),
            Legality = factor(ifelse(legality == 0.5, "Legal", "Illegal"),
                              levels = c("Legal", "Illegal")),
            experiment = label)
@@ -193,27 +214,43 @@ ggsave("plots/all_experiments_fa_by_distance.png", p_combined,
        width = 12, height = 4.5, dpi = 150)
 
 
-# ---- Single (non-faceted) plot with all experiments overlaid ----
-# Distances are z-scored within experiment (Per2's raw distances live on a
-# different scale than Per1's because of speaker / utterance differences),
-# so the x-axis is "distance relative to other speaker pairs in the same
-# experiment" rather than raw DTW units.
+# ---- Single (non-faceted) plot: Experiment 1 vs Experiment 2 ----
+# Per1A and Per1B are pooled here; the sub-experiment split stays in the facet
+# above. Distances are z-scored within experiment (Per2's raw distances live on
+# a different scale than Per1's), so the x-axis is "distance relative to other
+# speaker pairs in the same experiment" rather than raw DTW units.
+#
+# One point per (speaker pair x legality) -- 6 pairs in Exp 1, 8 in Exp 2. Both
+# points of a pair sit at the same x (the pair's mean distance), so the segment
+# joining them is vertical and its length is that pair's legality effect; the
+# segments shortening from left to right is the interaction.
 
-combined_fa_z <- combined_fa %>%
+overlay_fa <- bind_rows(
+  worker_fa(per1, "Experiment 1"),
+  worker_fa(per2, "Experiment 2")
+) %>%
+  mutate(experiment = factor(experiment, levels = c("Experiment 1", "Experiment 2"))) %>%
   group_by(experiment) %>%
   mutate(avg_distance_z = as.numeric(scale(avg_distance))) %>%
   ungroup()
 
-p_overlay <- ggplot(combined_fa_z, aes(x = avg_distance_z, y = fa_logit, color = Legality)) +
-  geom_jitter(aes(shape = experiment), alpha = 0.3, size = 1.2, width = 0.05, height = 0) +
-  geom_smooth(method = "lm", se = TRUE, linewidth = 1) +
+overlay_pair <- overlay_fa %>%
+  group_by(experiment, Legality, pair) %>%
+  summarize(avg_distance_z = mean(avg_distance_z),
+            fa_logit       = mean(fa_logit),
+            n              = n(), .groups = "drop")
+
+p_overlay <- ggplot(mapping = aes(x = avg_distance_z, y = fa_logit, color = Legality)) +
+  geom_smooth(data = overlay_fa, method = "lm", se = TRUE, linewidth = 1.1) +
+  geom_line(data = overlay_pair, aes(group = paste(experiment, pair)),
+            color = "grey45", linewidth = 0.5, alpha = 0.8) +
+  geom_point(data = overlay_pair, size = 3.4, alpha = 0.95) +
   scale_color_manual(values = c("Legal" = "#1f77b4", "Illegal" = "#d62728")) +
-  scale_shape_manual(values = c("Per1A" = 16, "Per1B" = 17, "Per2" = 15)) +
   labs(x = "Average embedding distance (z-scored within experiment)",
        y = "False alarm rate (empirical logit)",
-       title = "False alarm rate by speaker-pair embedding distance (all experiments combined)",
-       shape = "Experiment") +
+       title = "False alarm rate by speaker-pair embedding distance (Experiments 1 and 2)",
+       subtitle = "One point per speaker pair; connected points are the legal and illegal means for the same pair") +
   theme_minimal(base_size = 12)
 
 ggsave("plots/all_experiments_combined_fa_by_distance.png", p_overlay,
-       width = 9, height = 5.5, dpi = 150)
+       width = 9.5, height = 5.8, dpi = 150)

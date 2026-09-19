@@ -7,3 +7,12 @@ audio/
 .Rhistory
 **/.Rhistory
 .Rproj.user/
+
+# Cached HuBERT features (regenerable by process_audio_full.py)
+feature_cache/
+
+# Python bytecode
+__pycache__/
+
+# Reference PDFs (publisher-licensed; kept local)
+papers/

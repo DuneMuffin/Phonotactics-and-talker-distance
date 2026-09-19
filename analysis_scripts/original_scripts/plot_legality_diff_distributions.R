@@ -8,7 +8,9 @@
 # participant endorsed legal items more than illegal ones.
 #
 # Produces a histogram + density for each experiment (Per1A,
-# Per1B, Per2) separately, plus a combined overlay of all three.
+# Per1B, Per2) separately, a faceted view of the same three, and
+# an overlay at the experiment level (Per1 collapsed across 1A and
+# 1B, vs Per2).
 ############################################################
 
 library(plyr)
@@ -47,20 +49,25 @@ diff_1A  <- worker_legality_diff(per1a_data) %>% mutate(experiment = "Per1A")
 diff_1B  <- worker_legality_diff(per1b_data) %>% mutate(experiment = "Per1B")
 diff_2   <- worker_legality_diff(per2_data)  %>% mutate(experiment = "Per2")
 
+# Per1 collapsed across sub-experiments, for the experiment-level overlay.
+diff_1   <- worker_legality_diff(per1_data)  %>% mutate(experiment = "Per1")
+
 all_diff <- bind_rows(diff_1A, diff_1B, diff_2) %>%
   mutate(experiment = factor(experiment, levels = c("Per1A", "Per1B", "Per2")))
 
 
 ################### 2 - per-experiment histogram + density ###################
 
-exp_colors <- c("Per1A" = "#1b9e77", "Per1B" = "#d95f02", "Per2" = "#7570b3")
+exp_colors <- c("Per1A" = "#1b9e77", "Per1B" = "#d95f02",
+                "Per1"  = "#1b9e77", "Per2"  = "#7570b3")
 
 # Test items per subject per legality (drives the discreteness of the difference
 # score). The difference can only be a multiple of 1/n_items, so bins are aligned
 # to that grid (binwidth = 1/n_items, centered on 0) — one bin per achievable
 # value. Using a bin width that doesn't divide 1/n_items leaves phantom empty
 # bars where no achievable value can ever fall.
-exp_n_items <- c("Per1A" = 18, "Per1B" = 18, "Per2" = 16)
+# Per1A and Per1B both use 18, so the collapsed Per1 keeps the same grid.
+exp_n_items <- c("Per1A" = 18, "Per1B" = 18, "Per1" = 18, "Per2" = 16)
 
 make_hist <- function(df, label) {
   m  <- mean(df$diff)
@@ -90,22 +97,31 @@ ggsave("plots/per2_legality_diff_dist.png",  make_hist(diff_2,  "Per2"),
        width = 8, height = 5, dpi = 150)
 
 
-################### 3 - combined overlay (all three experiments) ###################
+################### 3 - experiment-level overlay (Per1 vs Per2) ###################
+
+# Per1 is collapsed across 1A and 1B here; the sub-experiment split is kept in
+# the per-experiment histograms above and the facet below.
+combined_diff <- bind_rows(diff_1, diff_2) %>%
+  mutate(experiment = factor(experiment, levels = c("Per1", "Per2")))
+
+combined_means <- combined_diff %>%
+  group_by(experiment) %>%
+  summarize(mean_diff = mean(diff), n = n(), .groups = "drop")
 
 exp_means <- all_diff %>%
   group_by(experiment) %>%
   summarize(mean_diff = mean(diff), n = n(), .groups = "drop")
 
-p_combined <- ggplot(all_diff, aes(x = diff, color = experiment, fill = experiment)) +
+p_combined <- ggplot(combined_diff, aes(x = diff, color = experiment, fill = experiment)) +
   geom_density(alpha = 0.15, linewidth = 1) +
   geom_vline(xintercept = 0, linetype = "dotted", color = "grey40") +
-  geom_vline(data = exp_means, aes(xintercept = mean_diff, color = experiment),
+  geom_vline(data = combined_means, aes(xintercept = mean_diff, color = experiment),
              linetype = "dashed", linewidth = 0.8, show.legend = FALSE) +
   scale_color_manual(values = exp_colors) +
   scale_fill_manual(values = exp_colors) +
-  labs(x = "Legality difference score (legal − illegal 'yes' rate)",
+  labs(x = "Legality difference score (legal \u2212 illegal 'yes' rate)",
        y = "Density",
-       title = "Per-subject legality difference scores, all experiments combined",
+       title = "Per-subject legality difference scores, Experiment 1 and Experiment 2",
        color = "Experiment", fill = "Experiment") +
   theme_minimal(base_size = 12)
 
@@ -146,7 +162,19 @@ ggsave("plots/all_experiments_legality_diff_facet.png", p_facet,
 
 ################### 4 - console summary ###################
 
-cat("\nPer-subject legality difference score summary:\n")
+cat("\nPer-subject legality difference score summary (experiment level):\n")
+combined_diff %>%
+  group_by(experiment) %>%
+  summarize(n = n(),
+            mean   = round(mean(diff), 4),
+            sd     = round(sd(diff), 4),
+            median = round(median(diff), 4),
+            pct_positive = round(mean(diff > 0), 3),
+            .groups = "drop") %>%
+  as.data.frame() %>%
+  print(row.names = FALSE)
+
+cat("\nPer-subject legality difference score summary (sub-experiments):\n")
 all_diff %>%
   group_by(experiment) %>%
   summarize(n = n(),
