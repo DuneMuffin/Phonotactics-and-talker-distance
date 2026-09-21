@@ -8,9 +8,10 @@
 # participant endorsed legal items more than illegal ones.
 #
 # Produces a histogram + density for each experiment (Per1A,
-# Per1B, Per2) separately, a faceted view of the same three, and
-# an overlay at the experiment level (Per1 collapsed across 1A and
-# 1B, vs Per2).
+# Per1B, Per2) separately, a faceted view of the same three, an
+# overlay at the experiment level (Per1 collapsed across 1A and
+# 1B, vs Per2), and the same facet view collapsed to two panels
+# (Experiment 1, Experiment 2).
 ############################################################
 
 library(plyr)
@@ -158,6 +159,37 @@ p_facet <- ggplot(facet_counts, aes(x = diff_grid, y = prop, fill = experiment))
 
 ggsave("plots/all_experiments_legality_diff_facet.png", p_facet,
        width = 8, height = 9, dpi = 150)
+
+
+# Same facet view collapsed to the experiment level (Per1 = 1A + 1B, vs Per2),
+# no title, sized for a manuscript column.
+combined_facet_counts <- combined_diff %>%
+  mutate(n_items = exp_n_items[as.character(experiment)],
+         diff_grid = round(diff * n_items) / n_items) %>%
+  group_by(experiment, diff_grid) %>%
+  dplyr::summarize(n = n(), .groups = "drop") %>%
+  group_by(experiment) %>%
+  mutate(prop = n / sum(n)) %>%
+  ungroup()
+
+exp_facet_labels <- c("Per1" = "Experiment 1", "Per2" = "Experiment 2")
+
+p_facet_combined <- ggplot(combined_facet_counts,
+                           aes(x = diff_grid, y = prop, fill = experiment)) +
+  geom_col(width = 0.045, alpha = 0.75) +
+  geom_vline(xintercept = 0, linetype = "dotted", color = "grey40") +
+  geom_vline(data = combined_means, aes(xintercept = mean_diff, color = experiment),
+             linetype = "dashed", linewidth = 0.8, show.legend = FALSE) +
+  scale_fill_manual(values = exp_colors) +
+  scale_color_manual(values = exp_colors) +
+  facet_wrap(~ experiment, ncol = 1, labeller = labeller(experiment = exp_facet_labels)) +
+  labs(x = "Legality difference score (legal − illegal 'yes' rate)",
+       y = "Proportion of subjects") +
+  theme_minimal(base_size = 9) +
+  theme(legend.position = "none")
+
+ggsave("plots/per1_per2_legality_diff_facet.png", p_facet_combined,
+       width = 3.5, height = 4, dpi = 300)
 
 
 ################### 4 - console summary ###################

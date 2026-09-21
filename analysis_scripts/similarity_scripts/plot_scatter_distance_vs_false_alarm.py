@@ -38,6 +38,20 @@ import pandas as pd
 import seaborn as sns
 
 
+# Times New Roman throughout, rather than matplotlib's default DejaVu Sans.
+# The fallbacks are metric-compatible Times clones, so the figures still build
+# on a machine without the Microsoft font (Linux/CI); order matters.
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman', 'Times', 'Nimbus Roman',
+                              'Liberation Serif', 'DejaVu Serif']
+# Keep any math text in a Times-like face too, so it doesn't fall back to the
+# sans-serif default mid-label.
+plt.rcParams['mathtext.fontset'] = 'stix'
+# Embed real TrueType rather than Type 3 subsets: most publishers reject Type 3,
+# and it keeps the text selectable/searchable in a submitted PDF or EPS.
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['ps.fonttype'] = 42
+
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 PLOTS_DIR = os.path.join(REPO_ROOT, "plots")
 
@@ -52,11 +66,11 @@ SPEAKER_MAP_PER1 = {
 
 COLORS = {1: '#2b83ba', 2: '#d7191c'}
 
-# Single-column journal figure spec for the per-experiment scatters.
+# Single-column journal figure spec, used by every figure here.
 # 3.15 in is the target column width; fonts are sized for that FINAL width, so
 # they look large relative to the axes compared with the old 10 in drafts.
 FIG_W, FIG_H = 3.15, 3.0
-FIG_DPI = 200
+FIG_DPI = 300
 FS_AXIS_LABEL = 9
 FS_TICK = 8
 FS_POINT_LABEL = 6
@@ -287,8 +301,11 @@ def plot_experiment(exp):
     fig, ax = plt.subplots(figsize=(FIG_W, FIG_H))
     sns.regplot(
         data=merged, x='distance', y='diff', ax=ax,
+        # 'linewidths', not 'linewidth': regplot forwards scatter_kws to
+        # plt.scatter alongside its own 'linewidths' default, and matplotlib
+        # rejects both aliases at once.
         scatter_kws={'s': 28, 'color': COLORS[exp], 'edgecolor': 'black',
-                     'linewidth': 0.5, 'alpha': 0.8},
+                     'linewidths': 0.5, 'alpha': 0.8},
         line_kws={'color': COLORS[exp], 'linewidth': 1.2, 'linestyle': '--'},
         ci=None)
 
@@ -361,25 +378,27 @@ def plot_combined():
         frames.append(m)
     merged = pd.concat(frames, ignore_index=True)
 
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(FIG_W, FIG_H))
     palette = {'Exp 1': COLORS[1], 'Exp 2': COLORS[2]}
+    # Marker/line/font sizes scaled down from the old 12 x 8 draft: at 3.15 in
+    # the previous s=150 points and 12-15 pt text covered most of the axes.
     sns.scatterplot(data=merged, x='distance', y='diff', hue='Experiment',
-                    style='Experiment', s=150, palette=palette,
-                    edgecolor='black', alpha=0.8, zorder=5)
+                    style='Experiment', s=28, palette=palette,
+                    edgecolor='black', linewidth=0.5, alpha=0.8, zorder=5)
 
     for exp_label in merged['Experiment'].unique():
         sns.regplot(data=merged[merged['Experiment'] == exp_label],
                     x='distance', y='diff', scatter=False, color=palette[exp_label],
-                    line_kws={'linewidth': 2, 'label': f'{exp_label} Trend'}, ci=None)
+                    line_kws={'linewidth': 1.2, 'label': f'{exp_label} Trend'}, ci=None)
 
     sns.regplot(data=merged, x='distance', y='diff', scatter=False,
-                line_kws={'color': 'gray', 'linewidth': 2, 'linestyle': '--',
+                line_kws={'color': 'gray', 'linewidth': 1.2, 'linestyle': '--',
                           'label': 'Overall Trend', 'alpha': 0.6}, ci=None)
 
     for _, row in merged.iterrows():
         plt.text(row['distance'] + 0.05, row['diff'],
                  row['Pair_Key'].replace('__', ' vs '),
-                 fontsize=8, ha='left', va='center',
+                 fontsize=FS_POINT_LABEL, ha='left', va='center',
                  bbox=dict(facecolor='white', alpha=0.3, edgecolor='none', pad=0.5))
 
     overall_r = merged['distance'].corr(merged['diff'])
@@ -387,23 +406,27 @@ def plot_combined():
               merged[merged['Experiment'] == e]['diff'])
           for e in ('Exp 1', 'Exp 2')}
 
-    plt.title('Embedding Distance vs. Perceptual Legality Effect (Combined Experiments)',
-              fontsize=15, pad=20)
-    plt.xlabel('Average Embedding Distance (HuBERT + DTW)', fontsize=12)
-    plt.ylabel('Mean (Legal - Illegal) Difference', fontsize=12)
-    plt.legend(title='Experiment', title_fontsize='12', fontsize='10', loc='lower right')
-    plt.grid(True, linestyle='--', alpha=0.6)
+    # Title wrapped over three lines: at 3.15 in the one-line form ran well past
+    # both figure edges.
+    plt.title('Embedding Distance vs.\nPerceptual Legality Effect\n(Combined Experiments)',
+              fontsize=FS_AXIS_LABEL, pad=6)
+    plt.xlabel('Average Embedding Distance (HuBERT + DTW)', fontsize=FS_AXIS_LABEL)
+    plt.ylabel('Mean (Legal - Illegal) Difference', fontsize=FS_AXIS_LABEL)
+    plt.tick_params(axis='both', labelsize=FS_TICK)
+    plt.legend(title='Experiment', title_fontsize=FS_TICK, fontsize=FS_POINT_LABEL,
+               loc='lower right')
+    plt.grid(True, linestyle='--', alpha=0.6, linewidth=0.5)
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
     plt.text(0.05, 0.95,
              f"Overall r = {overall_r:.3f}\nExp 1 r = {rs['Exp 1']:.3f}\n"
              f"Exp 2 r = {rs['Exp 2']:.3f}\nN = {len(merged)}",
-             transform=plt.gca().transAxes, fontsize=12, fontweight='bold', va='top',
-             bbox=dict(boxstyle="round,pad=0.5", facecolor='white',
-                       edgecolor='gray', alpha=0.9))
-    plt.tight_layout()
+             transform=plt.gca().transAxes, fontsize=FS_ANNOT, fontweight='bold', va='top',
+             bbox=dict(boxstyle="round,pad=0.3", facecolor='white',
+                       edgecolor='gray', linewidth=0.5, alpha=0.9))
+    plt.tight_layout(pad=0.3)
     out = os.path.join(PLOTS_DIR, "scatter_distance_vs_false_alarm_combined.png")
-    plt.savefig(out, dpi=300)
+    plt.savefig(out, dpi=FIG_DPI)
     plt.close()
     print(f"Combined: overall r = {overall_r:.3f}, Exp 1 r = {rs['Exp 1']:.3f}, "
           f"Exp 2 r = {rs['Exp 2']:.3f}, N = {len(merged)} "
