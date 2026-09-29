@@ -11,7 +11,8 @@
 # Per1B, Per2) separately, a faceted view of the same three, an
 # overlay at the experiment level (Per1 collapsed across 1A and
 # 1B, vs Per2), and the same facet view collapsed to two panels
-# (Experiment 1, Experiment 2).
+# (Experiment 1, Experiment 2) with each panel split by a
+# within-experiment median split on per-worker talker distance.
 ############################################################
 
 library(plyr)
@@ -161,35 +162,107 @@ ggsave("plots/all_experiments_legality_diff_facet.png", p_facet,
        width = 8, height = 9, dpi = 150)
 
 
-# Same facet view collapsed to the experiment level (Per1 = 1A + 1B, vs Per2),
-# no title, sized for a manuscript column.
-combined_facet_counts <- combined_diff %>%
+# Same facet view collapsed to the experiment level (Experiment 1 = Per1A +
+# Per1B, vs Experiment 2), no title, sized for a manuscript column, with the
+# two talker-distance halves of each experiment drawn separately.
+
+# Per-worker embedding distance. Same construction as prep_data() in
+# embedding_summary_table.R: each worker hears exactly two talkers across fam +
+# test, and avg_distance is the mean per-syllable HuBERT/DTW distance for that
+# talker pair over the syllables that worker actually heard.
+worker_avg_distance <- function(raw, sim_path) {
+  sim <- read.csv(sim_path)
+  sim$speaker1 <- sub("_[^_]+$", "", sim$S1)
+  sim$speaker2 <- sub("_[^_]+$", "", sim$S2)
+  sim$syl      <- sub("^.*_", "", as.character(sim$S1))
+  sim_lookup_sym <- bind_rows(
+    sim %>% select(speaker1, speaker2, syl, distance),
+    sim %>% select(speaker1 = speaker2, speaker2 = speaker1, syl, distance))
+
+  worker_speakers <- raw %>%
+    mutate(speaker = sub("^study-|^test-(legal|illegal)-", "", as.character(label))) %>%
+    distinct(worker_ID, speaker) %>%
+    group_by(worker_ID) %>%
+    arrange(speaker, .by_group = TRUE) %>%
+    dplyr::summarize(speaker1 = first(speaker), speaker2 = nth(speaker, 2),
+                     .groups = "drop")
+
+  worker_syllables <- raw %>%
+    mutate(syl = sub("^.*_", "", as.character(syllable))) %>%
+    distinct(worker_ID, syl)
+
+  worker_speakers %>%
+    inner_join(worker_syllables, by = "worker_ID") %>%
+    inner_join(sim_lookup_sym, by = c("speaker1", "speaker2", "syl")) %>%
+    group_by(worker_ID) %>%
+    dplyr::summarize(avg_distance = mean(distance), .groups = "drop")
+}
+
+dist_1 <- worker_avg_distance(per1_data,
+                              "../../per_similarity_results/per1_speaker_pair_per_sim_full.csv")
+dist_2 <- worker_avg_distance(per2_data,
+                              "../../per_similarity_results/per2_speaker_pair_per_sim_full.csv")
+
+# Median split on avg_distance WITHIN experiment — Per1 and Per2 distances live
+# on different scales, so a pooled split would just re-encode experiment.
+combined_diff_dist <- bind_rows(
+    inner_join(diff_1, dist_1, by = "worker_ID"),
+    inner_join(diff_2, dist_2, by = "worker_ID")) %>%
+  mutate(experiment = factor(experiment, levels = c("Per1", "Per2"))) %>%
+  group_by(experiment) %>%
+  mutate(dist_group = factor(ifelse(avg_distance >= median(avg_distance),
+                                    "High", "Low"),
+                             levels = c("Low", "High"))) %>%
+  ungroup()
+
+dist_colors <- c("Low" = "#2166ac", "High" = "#b2182b")
+
+# Proportions are within experiment x distance group, so the two halves are
+# each their own distribution rather than two pieces of one.
+split_counts <- combined_diff_dist %>%
   mutate(n_items = exp_n_items[as.character(experiment)],
          diff_grid = round(diff * n_items) / n_items) %>%
-  group_by(experiment, diff_grid) %>%
+  group_by(experiment, dist_group, diff_grid) %>%
   dplyr::summarize(n = n(), .groups = "drop") %>%
-  group_by(experiment) %>%
+  group_by(experiment, dist_group) %>%
   mutate(prop = n / sum(n)) %>%
   ungroup()
 
+# Dodging only lines up if both groups have a bar at every achievable value, so
+# fill the empty cells with zero-height bars.
+split_counts <- merge(distinct(split_counts, experiment, diff_grid),
+                      data.frame(dist_group = factor(c("Low", "High"),
+                                                     levels = c("Low", "High"))),
+                      by = NULL) %>%
+  left_join(split_counts, by = c("experiment", "diff_grid", "dist_group")) %>%
+  mutate(n = ifelse(is.na(n), 0L, n), prop = ifelse(is.na(prop), 0, prop))
+
+split_means <- combined_diff_dist %>%
+  group_by(experiment, dist_group) %>%
+  dplyr::summarize(mean_diff = mean(diff), n = n(), .groups = "drop")
+
 exp_facet_labels <- c("Per1" = "Experiment 1", "Per2" = "Experiment 2")
 
-p_facet_combined <- ggplot(combined_facet_counts,
-                           aes(x = diff_grid, y = prop, fill = experiment)) +
-  geom_col(width = 0.045, alpha = 0.75) +
+p_facet_combined <- ggplot(split_counts,
+                           aes(x = diff_grid, y = prop, fill = dist_group)) +
+  geom_col(width = 0.045, alpha = 0.75,
+           position = position_dodge(width = 0.045)) +
   geom_vline(xintercept = 0, linetype = "dotted", color = "grey40") +
-  geom_vline(data = combined_means, aes(xintercept = mean_diff, color = experiment),
-             linetype = "dashed", linewidth = 0.8, show.legend = FALSE) +
-  scale_fill_manual(values = exp_colors) +
-  scale_color_manual(values = exp_colors) +
+  geom_vline(data = split_means, aes(xintercept = mean_diff, color = dist_group),
+             linetype = "dashed", linewidth = 0.6, show.legend = FALSE) +
+  scale_fill_manual(values = dist_colors) +
+  scale_color_manual(values = dist_colors) +
   facet_wrap(~ experiment, ncol = 1, labeller = labeller(experiment = exp_facet_labels)) +
   labs(x = "Legality difference score (legal − illegal 'yes' rate)",
-       y = "Proportion of subjects") +
+       y = "Proportion of listeners",
+       fill = "Talker distance") +
   theme_minimal(base_size = 9) +
-  theme(legend.position = "none")
+  theme(legend.position = "bottom",
+        legend.key.size = unit(0.35, "cm"),
+        legend.margin = margin(t = -4))
 
 ggsave("plots/per1_per2_legality_diff_facet.png", p_facet_combined,
-       width = 3.5, height = 4, dpi = 300)
+       width = 3.5, height = 3, dpi = 300)
 
 
 ################### 4 - console summary ###################
@@ -198,6 +271,19 @@ cat("\nPer-subject legality difference score summary (experiment level):\n")
 combined_diff %>%
   group_by(experiment) %>%
   summarize(n = n(),
+            mean   = round(mean(diff), 4),
+            sd     = round(sd(diff), 4),
+            median = round(median(diff), 4),
+            pct_positive = round(mean(diff > 0), 3),
+            .groups = "drop") %>%
+  as.data.frame() %>%
+  print(row.names = FALSE)
+
+cat("\nPer-subject legality difference score summary (talker-distance median split):\n")
+combined_diff_dist %>%
+  group_by(experiment, dist_group) %>%
+  summarize(n = n(),
+            mean_distance = round(mean(avg_distance), 3),
             mean   = round(mean(diff), 4),
             sd     = round(sd(diff), 4),
             median = round(median(diff), 4),
