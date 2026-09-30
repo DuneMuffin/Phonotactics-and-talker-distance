@@ -52,6 +52,10 @@ analysis_scripts/
     test_bimodality_varying_mean.R  Distance-varying mixture weight vs.
                             distance-varying unimodal mean (AIC/BIC +
                             parametric bootstrap)
+    test_bimodality_binomial.R  Same comparison at the trial level: two latent
+                            listener classes vs. a continuous legality effect,
+                            binomial likelihood, Gauss-Hermite quadrature,
+                            plus a recovery simulation
     analysis_functions.R    Shared helpers (open_file, chiReport.func, …)
 experiment_data/          Human listener response CSVs (already public elsewhere)
 per_similarity_results/   Computed per-syllable pairwise distances (_full CSVs)
