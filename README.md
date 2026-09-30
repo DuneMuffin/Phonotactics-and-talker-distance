@@ -49,6 +49,9 @@ analysis_scripts/
     plot_legality_diff_distributions.R  Per-subject legality difference-score dists
     test_bimodality.R / test_bimodality_ranef.R  Unimodality checks (dip test,
                             Gaussian-mixture BIC, noise-shrunk random slopes)
+    test_bimodality_varying_mean.R  Distance-varying mixture weight vs.
+                            distance-varying unimodal mean (AIC/BIC +
+                            parametric bootstrap)
     analysis_functions.R    Shared helpers (open_file, chiReport.func, …)
 experiment_data/          Human listener response CSVs (already public elsewhere)
 per_similarity_results/   Computed per-syllable pairwise distances (_full CSVs)
